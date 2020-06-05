@@ -59,7 +59,7 @@ class BuildkitePipelineAlertsTest(unittest.TestCase):
             "version": "0",
             "id": "00000",
             "detail-type": "Build Finished",
-            "source": "aws.partner/buildkite.com/amazon-eventbridge/00000",
+            "source": "aws.partner/buildkite.com/organization/00000",
             "account": "00000",
             "time": "2020-05-28T05:03:31Z",
             "region": "us-east-1",

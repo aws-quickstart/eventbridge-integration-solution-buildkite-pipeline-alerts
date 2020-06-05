@@ -13,4 +13,4 @@ Sending text message alerts with Amazon SNS:
 Sending alerts to a webhook endpoint with AWS Lambda:
 ![Quick Start architecture for EventBridge Integration Solution for Buildkite pipeline alerts & Lambda](https://github.com/aws-quickstart/eventbridge-integration-solution-buildkite-pipeline-alerts/raw/master/images/arch-eventbridge-lambda-webhook.png)
 
-To post feedback, submit feature ideas, or report bugs, use the **Issues** section of [this GitHub repo](https://github.com/aws-quickstart/eventbridge-buildkite-pipeline-alerts).
+To post feedback, submit feature ideas, or report bugs, use the **Issues** section of [this GitHub repo](https://github.com/aws-quickstart/eventbridge-integration-solution-buildkite-pipeline-alerts).

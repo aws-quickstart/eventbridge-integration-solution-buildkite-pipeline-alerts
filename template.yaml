@@ -14,7 +14,7 @@ Metadata:
     ReadmeUrl: README.md
     Labels: ['amazon', 'eventbridge', 'integration', 'solution', 'sns', 'buildkite', 'aws', 'webhook']
     HomePageUrl: https://github.com/aws-quickstart/eventbridge-integration-solution-buildkite-pipeline-alerts
-    SemanticVersion: 0.1.0
+    SemanticVersion: 0.1.1
     SourceCodeUrl: https://github.com/aws-quickstart/eventbridge-integration-solution-buildkite-pipeline-alerts
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -64,8 +64,8 @@ Parameters:
   # Pass AlertDestination parameter to select whether to deploy resources for text message or webhook endpoint alerts.
   AlertDestination:
     AllowedValues:
-      - sms
-      - webhook
+    - sms
+    - webhook
     Default: sms
     Description: Creates either an SNS topic to send text messages, or a Lambda function to call your webhook endpoint.
     Type: String
