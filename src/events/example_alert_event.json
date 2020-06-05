@@ -1,0 +1,35 @@
+{
+  "version": "0",
+  "id": "00000",
+  "detail-type": "Build Finished",
+  "source": "aws.partner/buildkite.com/amazon-eventbridge/00000",
+  "account": "00000",
+  "time": "2020-05-28T05:03:31Z",
+  "region": "us-east-1",
+  "resources": [],
+  "detail": {
+      "version": 1,
+      "build": {
+          "uuid": "00000",
+          "graphql_id": "00000",
+          "number": 75,
+          "commit": "00000",
+          "message": "test event",
+          "branch": "master",
+          "state": "passed",
+          "source": "ui",
+          "started_at": "2020-05-28 05:03:22 UTC",
+          "finished_at": "2020-05-28 05:03:31 UTC"
+      },
+      "pipeline": {
+          "uuid": "00000",
+          "graphql_id": "00000",
+          "slug": "test-pipeline"
+      },
+      "organization": {
+          "uuid": "00000",
+          "graphql_id": "00000",
+          "slug": "test-organization"
+      }
+  }
+}
