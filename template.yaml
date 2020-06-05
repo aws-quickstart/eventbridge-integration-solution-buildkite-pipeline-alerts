@@ -13,7 +13,7 @@ Metadata:
     LicenseUrl: LICENSE
     ReadmeUrl: README.md
     Labels: ['amazon', 'eventbridge', 'integration', 'solution', 'sns', 'buildkite', 'aws', 'webhook']
-    HomePageUrl: https://aws.amazon.com/quickstart/eventbridge/buildkite-pipeline-alerts
+    HomePageUrl: https://github.com/aws-quickstart/eventbridge-integration-solution-buildkite-pipeline-alerts
     SemanticVersion: 0.1.0
     SourceCodeUrl: https://github.com/aws-quickstart/eventbridge-integration-solution-buildkite-pipeline-alerts
   AWS::CloudFormation::Interface:
@@ -41,42 +41,42 @@ Metadata:
 Parameters:
   # Follow instructions in the EventBridge console to set up Buildkite as a partner event source.
   # Pass the partner event source name as your EventSourceName parameter.
-  # Ex: aws.partner/buildkite.com/amazon-eventbridge/1a111-2b222-3c333-4d444
+  # Ex: aws.partner/buildkite.com/<org-slug>/1a111-2b222-3c333-4d444
   EventSourceName:
     Type: String
-    AllowedPattern: aws\.partner\/buildkite\.com\/.+\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
-    MinLength: 49
+    AllowedPattern: aws\.partner(/[\.\-_A-Za-z0-9]+){2,}
+    MinLength: 1
     MaxLength: 256
-    Description: Name of the Buildkite Partner Event Source to associate with an Event Bus. For example, aws.partner/buildkite.com/amazon-eventbridge/uuid
+    Description: Name of the Buildkite Partner Event Source to associate with an Event Bus. For example, aws.partner/buildkite.com/<org-slug>/<uuid>
   ### If setting up text message alerts:
   # Pass the phone number that will receive notifications - including country code, i.e. 12225555 for U.S. - as your NotificationPhoneNumber parameter.
   NotificationPhoneNumber:
     Description: If receiving text messages, provide a phone number to receive notifications.
     Type: String
-    Default: ""
+    Default: ''
   ### If setting up webhook alerts:
   # Set up a webhook in your notification service, like Chime or Slack.
   # Pass the webhook endpoint URL as your WebhookUrl parameter.
   WebhookUrl:
     Description: If sending alerts to a webhook endpoint, provide a webhook URL to receive notifications.
     Type: String
-    Default: ""
+    Default: ''
   # Pass AlertDestination parameter to select whether to deploy resources for text message or webhook endpoint alerts.
   AlertDestination:
     AllowedValues:
-      - 'sms'
-      - 'webhook'
-    Default: 'sms'
-    Description: 'Creates either an SNS topic to send text messages, or a Lambda function to call your webhook endpoint.'
+      - sms
+      - webhook
+    Default: sms
+    Description: Creates either an SNS topic to send text messages, or a Lambda function to call your webhook endpoint.
     Type: String
 
 Conditions:
   SnsAlertDestination: !Equals
     - !Ref AlertDestination
-    - 'sms'
+    - sms
   WebhookAlertDestination: !Equals
     - !Ref AlertDestination
-    - 'webhook'
+    - webhook
 
 Resources:
   BuildkiteEventBus: 
@@ -88,29 +88,29 @@ Resources:
   # Resources for text message alerts through SNS:
   BuildkitePipelineAlertsRuleSns:
     Condition: SnsAlertDestination
-    Type: 'AWS::Events::Rule'
+    Type: AWS::Events::Rule
     Properties:
       EventBusName: !Ref BuildkiteEventBus
       EventPattern:
         detail-type:
-          - "Build Finished"
+        - Build Finished
       Targets:
-        - Arn: !Ref BuildkiteAlertsSnsTopic
-          Id: !GetAtt BuildkiteAlertsSnsTopic.TopicName
-          InputTransformer:
-            InputPathsMap:
-              "event-type" : "$.detail-type"
-              "event-state" : "$.detail.build.state"
-              "event-finished" : "$.detail.build.finished_at"
-              "pipeline-name" : "$.detail.pipeline.slug"
-            InputTemplate: "\"<event-type> for pipeline: <pipeline-name>, <event-finished>. Status: <event-state>.\""
+      - Arn: !Ref BuildkiteAlertsSnsTopic
+        Id: !GetAtt BuildkiteAlertsSnsTopic.TopicName
+        InputTransformer:
+          InputPathsMap:
+            "event-type" : "$.detail-type"
+            "event-state" : "$.detail.build.state"
+            "event-finished" : "$.detail.build.finished_at"
+            "pipeline-name" : "$.detail.pipeline.slug"
+          InputTemplate: "\"<event-type> for pipeline: <pipeline-name>, <event-finished>. Status: <event-state>.\""
 
   BuildkiteAlertsSnsTopic:
     Condition: SnsAlertDestination
-    Type: 'AWS::SNS::Topic'
+    Type: AWS::SNS::Topic
     Properties: 
-      DisplayName: "BuildkiteAlerts"
-      TopicName: "BuildkiteAlerts"
+      DisplayName: BuildkiteAlerts
+      TopicName: BuildkiteAlerts
       Subscription:
       - Protocol: sms
         Endpoint: !Ref NotificationPhoneNumber
@@ -136,11 +136,10 @@ Resources:
   # Resources for webhook alerts through Lambda:
   BuildkitePipelineAlertsFunction:
     Condition: WebhookAlertDestination
-    Type: 'AWS::Serverless::Function'
+    Type: AWS::Serverless::Function
     Properties:
-      FunctionName: BuildkitePipelineAlertsFunction
       Handler: app.lambda_handler
-      Runtime: python3.7
+      Runtime: python3.8
       CodeUri: src/pipeline_alerts_function
       Description: A function that is invoked by an EventBridge event and calls a webhook endpoint.
       Environment:
@@ -149,51 +148,51 @@ Resources:
 
   BuildkitePipelineAlertsRuleLambda:
     Condition: WebhookAlertDestination
-    Type: 'AWS::Events::Rule'
+    Type: AWS::Events::Rule
     Properties:
       EventBusName: !Ref BuildkiteEventBus
       EventPattern:
         detail-type:
-          - "Build Finished"
+        - Build Finished
       Targets:
-        - Arn: !GetAtt BuildkitePipelineAlertsFunction.Arn
-          Id: !Ref BuildkitePipelineAlertsFunction
+      - Arn: !GetAtt BuildkitePipelineAlertsFunction.Arn
+        Id: !Ref BuildkitePipelineAlertsFunction
   
   PermissionForEventsToInvokeLambda: 
     Condition: WebhookAlertDestination
     Type: AWS::Lambda::Permission
     Properties: 
       FunctionName: !Ref BuildkitePipelineAlertsFunction
-      Action: "lambda:InvokeFunction"
-      Principal: "events.amazonaws.com"
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
       SourceArn: !GetAtt BuildkitePipelineAlertsRuleLambda.Arn
 
 Outputs:
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#eventbridgerule
   EventBridgeBus:
-    Description: "EventBridge Bus ARN"
+    Description: EventBridge Bus ARN
     Value: !GetAtt BuildkiteEventBus.Arn
   # Outputs for SNS Alert Destination
   EventBridgeRuleSns:
     Condition: SnsAlertDestination
-    Description: "EventBridge Rule for SNS ARN"
+    Description: EventBridge Rule for SNS ARN
     Value: !GetAtt BuildkitePipelineAlertsRuleSns.Arn
   BuildkiteAlertsSnsTopic:
     Condition: SnsAlertDestination
-    Description: "SNS Topic ARN"
+    Description: SNS Topic ARN
     Value: !Ref BuildkiteAlertsSnsTopic
   # Outputs for Webhook Endpoint Alert Destination
   EventBridgeRuleLambda:
     Condition: WebhookAlertDestination
-    Description: "EventBridge Rule for Lambda Function ARN"
+    Description: EventBridge Rule for Lambda Function ARN
     Value: !GetAtt BuildkitePipelineAlertsRuleLambda.Arn
   EventBridgeFunction:
     Condition: WebhookAlertDestination
-    Description: "Buildkite Pipeline Alerts Lambda Function ARN"
+    Description: Buildkite Pipeline Alerts Lambda Function ARN
     Value: !GetAtt BuildkitePipelineAlertsFunction.Arn
   EventBridgeFunctionIamRole:
     Condition: WebhookAlertDestination
-    Description: "Implicit IAM Role created for Lambda function"
+    Description: Implicit IAM Role created for Lambda function
     Value: !GetAtt BuildkitePipelineAlertsFunctionRole.Arn
 
