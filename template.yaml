@@ -13,8 +13,8 @@ Metadata:
     LicenseUrl: LICENSE
     ReadmeUrl: README.md
     Labels: ['amazon', 'eventbridge', 'integration', 'solution', 'sns', 'buildkite', 'aws', 'webhook']
-    HomePageUrl: https://github.com/aws-quickstart/eventbridge-integration-solution-buildkite-pipeline-alerts
-    SemanticVersion: 0.1.1
+    HomePageUrl: https://aws.amazon.com/quickstart/eventbridge/buildkite-pipeline-alerts/
+    SemanticVersion: 0.1.2
     SourceCodeUrl: https://github.com/aws-quickstart/eventbridge-integration-solution-buildkite-pipeline-alerts
   AWS::CloudFormation::Interface:
     ParameterGroups:
